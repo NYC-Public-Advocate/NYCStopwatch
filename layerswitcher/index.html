@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Tornadoes in the U.S.</title>
+  <script src='js/jquery-1.7.1.min.js' type='text/javascript'></script>
+  <script src='wax/ext/modestmaps.min.js' type='text/javascript'></script>
+  <script src='wax/dist/wax.mm.js' type='text/javascript'></script>
+  <link href='wax/theme/controls.css' rel='stylesheet' type='text/css' />
+  
+  <style type="text/css">
+	  body {
+	    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	    overflow: hidden;
+	    background: #111;
+	  }
+	  p {
+	    line-height: 20px;
+	  }
+	  a {
+	    color: #29A1E1;
+	    text-decoration: none;
+	  }
+	  a:hover {
+	    text-decoration: underline;
+	  }
+	  #mymap {
+	    position: absolute;
+	    top: 0;
+	    right: 400px;
+	    left: 0;
+	    height: 100%;
+	    background: #020B1A;
+	  }
+	  #sidebar {
+	    position: absolute;
+	    top: 0;
+	    bottom: 0;
+	    right: 0;
+	    width: 359px;
+	    background: #111;
+	    color: #fff;
+	    border-left:1px solid #000;
+	    padding: 20px;
+	  }
+	  .source {
+	    font-size: 80%;
+	  }
+	  .layerswitch {
+	    list-style: none;
+	    padding: 0;
+	  }
+	  .layerswitch li {
+	    display: inline;
+	  }
+	  .layerswitch li a {
+	    float: left;
+	    display: block;
+	    height: 30px;
+	    width: 60px;
+	    border: 1px solid #333;
+	    margin-right: 10px;
+	    text-align: center;
+	    line-height: 30px;
+	    color: #fff;
+	    text-decoration: none;
+	  }
+	  .layerswitch li a.active {
+	    border-color: #813;
+	  }
+	  .wax-tooltip {
+	    right: 10px;
+	    left: auto;
+	  }
+	</style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Tornadoes in the United States</h2>
+    <p>This map shows every tornado that occurred in the United States on a yearly basis over the last three years. Sizes of the dots are based on F-scale. Hover over them to view detailed statistics.</p>
+    <p>Source: <a href="http://www.weather.gov/">NOAA's National Weather Service</a></p>
+    <ul class="layerswitch">
+      <li><a id="mapbox.tornadoes-2008" href="#">2008</a></li>
+      <li><a id="mapbox.tornadoes-2009" href="#">2009</a></li>
+      <li><a id="mapbox.tornadoes-2010" class="active" href="#">2010</a></li>
+    </ul>
+  </div>
+  <div id="mymap"></div>
+  <script type='text/javascript'>
+    // Declare variables
+    var map, interaction;
+    // Set initial map layer
+    var layer = 'mapbox.tornadoes-2010';
+    // Static part of the map url
+    var urlBase = 'http://api.tiles.mapbox.com/v3/mapbox.mapbox-streets,';
+    // Full map url
+    var url = urlBase + layer + '.jsonp';
+
+    wax.tilejson(url, function(tilejson) {
+      // Set minimum zoom limit
+      tilejson.minzoom = 4;
+      // Set maximum zoom limit
+      tilejson.maxzoom = 8;
+      map = new MM.Map('mymap',
+        new wax.mm.connector(tilejson));
+      wax.mm.zoomer(map, tilejson).appendTo(map.parent);
+      interaction = wax.mm.interaction().map(map).tilejson(tilejson)
+        .on(wax.tooltip().parent(map.parent).events());
+      wax.mm.attribution(map, tilejson).appendTo(map.parent);
+      map.setCenterZoom({ lat: 39, lon: -98 }, 5);
+    });
+
+    $('#sidebar ul.layerswitch a').click(function (e) {
+      e.preventDefault();
+      layer = this.id;
+      $('#sidebar ul.layerswitch a').removeClass('active');
+      $(this).addClass('active');
+      refreshMap();
+    });
+
+    function refreshMap() {
+      url = urlBase + layer + '.jsonp';
+      wax.tilejson(url, function(tilejson) {
+        map.setLayerAt(0, new wax.mm.connector(tilejson));
+        interaction.tilejson(tilejson);
+      });
+    }
+  </script>
+</body>
+</html>

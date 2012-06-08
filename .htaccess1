@@ -1,0 +1,10 @@
+<Files ".ht*">
+order allow,deny
+deny from all
+</Files>
+
+AuthUserFile /var/www/stopfrisk/.htpasswd
+AuthType Basic
+AuthName "Please Login"
+
+require valid-user
